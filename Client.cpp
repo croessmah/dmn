@@ -1,3 +1,6 @@
+#include <sys/types.h>
+#include <sys/socket.h>
+
 #include "Client.h"
 
 
@@ -8,7 +11,8 @@ Client::Client()
 Client::Client(Client && src):
     socket_(std::move(src.socket_)),
     buffer_(src.buffer_),
-    clock_(src.clock_)
+	attachTime_(src.attachTime_),
+	timeout_(src.timeout_)
 {
 }
 
@@ -18,7 +22,8 @@ Client & Client::operator=(Client && src)
         disconnect();
         socket_.swap(src.socket_);
         buffer_.swap(src.buffer_);
-        std::swap(clock_, src.clock_);
+		std::swap(attachTime_, src.attachTime_);
+		std::swap(timeout_, src.timeout_);
     }
     return *this;
 }
@@ -38,15 +43,17 @@ void Client::swap(Client & src)
     if (this != &src) {
         socket_.swap(src.socket_);
         buffer_.swap(src.buffer_);
-        std::swap(clock_, src.clock_);
+		std::swap(attachTime_, src.attachTime_);
+		std::swap(timeout_, src.timeout_);
     }
 }
 
-void Client::attach(Socket && socket)
+void Client::attach(Socket && socket, unsigned timeout)
 {
     socket_ = std::move(socket);
     buffer_.clear();
-    clock_ = std::clock();
+	attachTime_ = Clock::now();
+	timeout_ = timeout;
 }
 
 bool Client::read()
@@ -60,7 +67,7 @@ bool Client::read()
     if (rc == 0) {
         return false;
     }
-    clock_ = std::clock();
+
     do {
         if (rc < 0) {
             return errno == EWOULDBLOCK || errno == EAGAIN;
@@ -71,9 +78,21 @@ bool Client::read()
     return true;
 }
 
-clock_t Client::updateClock()
+unsigned Client::elapsed()
 {
-    return clock_;
+	return std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now() - attachTime_).count();
+}
+
+unsigned Client::lost()
+{
+	unsigned elapsedMs = elapsed();
+	if (timeout_ < elapsedMs) {
+		return 0;
+	}
+	if (timeout_ == infinite) {
+		return timeout_;
+	}
+	return timeout_ - elapsedMs;
 }
 
 std::string const & Client::buffer()

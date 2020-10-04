@@ -4,7 +4,7 @@
 NetCommandsQueue::NetCommandsQueue() : endSignal_(false) {}
 
 
-void NetCommandsQueue::push(std::string &&source)
+void NetCommandsQueue::push(std::string source)
 {
     {
         std::lock_guard<std::mutex> lock(mutex_);

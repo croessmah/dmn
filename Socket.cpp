@@ -1,8 +1,15 @@
-#ifdef _MSC_VER
-#define _CRT_SECURE_NO_WARNINGS
-#endif
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+
 #include <algorithm>
 #include <stdexcept>
+#include <cstring>
 #include "Socket.h"
 
 
@@ -49,7 +56,7 @@ bool Socket::valid()
 Socket & Socket::create()
 {
     close();
-    socket_ = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	socket_ = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (socket_ == INVALID_SOCKET) {
         throw std::runtime_error(strerror(errno));
     }
@@ -58,7 +65,7 @@ Socket & Socket::create()
 
 Socket & Socket::setReuseAddr()
 {
-    u_long on = 1;
+	int on = 1;
     int rc = setsockopt(socket_, SOL_SOCKET,  SO_REUSEADDR, (char *)&on, sizeof(on));
     if (rc < 0) {
         throw std::runtime_error(strerror(errno));
@@ -68,8 +75,8 @@ Socket & Socket::setReuseAddr()
 
 Socket & Socket::setNoBlockMode()
 {
-    u_long on = 1;
-    int rc = ioctlsocket(socket_, FIONBIO, &on);
+	int on = 1;
+	int rc = ioctl(socket_, FIONBIO, &on);
     if (rc < 0) {
         throw std::runtime_error(strerror(errno));
     }
@@ -89,7 +96,6 @@ Socket & Socket::bind(const char * ipStr, uint16_t port)
     addr.sin_addr.s_addr = ip;
     int rc = ::bind(socket_, (sockaddr *)&addr, sizeof(addr));
     if (rc < 0) {
-        auto l = GetLastError();
         throw std::runtime_error(strerror(errno));
     }
     return *this;
@@ -110,13 +116,11 @@ Socket Socket::accept()
     return ::accept(socket_, NULL, NULL);
 }
 
-
-
 void Socket::close()
 {
     if (socket_ != INVALID_SOCKET) {
-        shutdown(socket_, SD_BOTH);
-        closesocket(socket_);
+		::shutdown(socket_, SHUT_RDWR);
+		::close(socket_);
         socket_ = INVALID_SOCKET;
     }
 }

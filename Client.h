@@ -3,6 +3,7 @@
 
 #include <string>
 #include <ctime>
+#include <chrono>
 #include "Socket.h"
 
 
@@ -10,6 +11,9 @@
 struct Client
 {
 public:
+	static constexpr unsigned infinite = ~0;
+	using Clock = std::chrono::high_resolution_clock;
+	using Timepoint = Clock::time_point;
     Client();
     Client(Client && src);
     Client & operator=(Client && src);
@@ -18,9 +22,10 @@ public:
     ~Client();
     bool connected();
     void swap(Client & src);
-    void attach(Socket && socket);
+	void attach(Socket && socket, unsigned timeout = infinite);
     bool read();
-    std::clock_t updateClock();
+	unsigned elapsed();
+	unsigned lost();
     std::string const & buffer();
     bool extract(size_t count);
     void disconnect();
@@ -28,7 +33,8 @@ public:
 private:
     Socket socket_;
     std::string buffer_;
-    std::clock_t clock_;
+	Timepoint attachTime_;
+	unsigned timeout_;
 };
 
 

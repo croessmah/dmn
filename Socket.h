@@ -1,9 +1,11 @@
 #ifndef SOCKET_H
 #define SOCKET_H
 
-#include <WinSock2.h>
-#include <Windows.h>
 #include <cstdint>
+
+using SOCKET = int;
+constexpr int INVALID_SOCKET = -1;
+
 
 class Socket
 {

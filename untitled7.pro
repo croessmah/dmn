@@ -3,8 +3,7 @@ CONFIG += console c++14
 CONFIG -= app_bundle
 CONFIG -= qt
 
-
-LIBS += -lWs2_32
+LIBS += -lpthread
 
 SOURCES += \
         BackgroundFunctional..cpp \

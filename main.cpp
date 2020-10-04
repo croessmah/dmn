@@ -50,14 +50,7 @@ int main()
        .reg("cmd3", std::make_unique<CmdFunc3>());
     Executor executor(tbl);
 
-
     runBackgroundWorkers(0, ncc, executor);
-
-
-    for (unsigned i = 0; i < 10000; ++i) {
-        ncc.push(generateCommand(rand() % 5 + 1));
-    }
-
 
     std::cout << "send end..." << std::endl;
     ncc.sendEnd();
@@ -67,7 +60,7 @@ int main()
 
 
     try {
-        Server srv;
+		Server srv(ncc, 3000);
         srv.run();
     } catch (std::exception & e) {
         std::cout << "error: " << e.what();

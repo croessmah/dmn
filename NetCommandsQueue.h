@@ -10,7 +10,7 @@ class NetCommandsQueue
 {
 public:
     NetCommandsQueue();
-    void push(std::string && source);
+	void push(std::string source);
     bool waitAndPop(std::string & result);
     void sendEnd();
     void waitEmpty();
