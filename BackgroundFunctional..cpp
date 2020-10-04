@@ -1,7 +1,3 @@
-#ifdef _MSC_VER
-#define _CRT_SECURE_NO_WARNINGS
-#endif
-
 #include "BackgroundFunctional.h"
 #include "Executor.h"
 #include "NetCommandsQueue.h"
@@ -9,6 +5,7 @@
 #include <string>
 #include <cstring>
 #include <thread>
+#include <iostream>
 
 namespace
 {
@@ -33,6 +30,7 @@ void backThreadFunction(NetCommandsQueue & queue, Executor & executor)
     std::string commandText;
     std::vector<char *> tokens;
     while (queue.waitAndPop(commandText)) {
+		std::cout << "cmd text: " << commandText << std::endl;
         if (split(commandText, tokens)) {
             if (executor.execute(tokens)) {
                 //todo: success
@@ -47,9 +45,6 @@ void backThreadFunction(NetCommandsQueue & queue, Executor & executor)
 
 
 }//internal linkage
-
-
-
 
 
 unsigned runBackgroundWorkers(unsigned threadsCount, NetCommandsQueue & queue, Executor & executor)

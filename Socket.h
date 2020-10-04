@@ -25,6 +25,7 @@ public:
     Socket & bind(char const * ipStr, uint16_t port);
     Socket & listen(int backlog);
     Socket accept();
+	bool connect(char const * ipStr, uint16_t port);
     void close();
     SOCKET native();
 private:

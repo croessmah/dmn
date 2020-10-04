@@ -12,7 +12,8 @@
 #include "CmdFuncs.h"
 #include "Server.h"
 
-
+#include "Socket.h"
+#include <thread>
 
 std::string generateOne(unsigned length)
 {
@@ -40,6 +41,16 @@ std::string generateCommand(unsigned count)
 }
 
 
+void connectTest()
+{
+	std::this_thread::sleep_for(std::chrono::seconds(5));
+	for (int i = 0; i < 10000; ++i) {
+		Socket sock;
+		sock.create();
+	}
+}
+
+
 int main()
 {
     std::cout.sync_with_stdio(false);
@@ -50,18 +61,14 @@ int main()
        .reg("cmd3", std::make_unique<CmdFunc3>());
     Executor executor(tbl);
 
-    runBackgroundWorkers(0, ncc, executor);
-
-    std::cout << "send end..." << std::endl;
-    ncc.sendEnd();
-    std::cout << "wait..." << std::endl;
-    ncc.waitEmpty();
-    std::cout << "end of main" << std::endl;
-
+	std::thread(connectTest).detach();
 
     try {
-		Server srv(ncc, 3000);
+		Server srv(ncc, 10000);
+		runBackgroundWorkers(0, ncc, executor);
         srv.run();
+		ncc.sendEnd();
+		ncc.waitEmpty();
     } catch (std::exception & e) {
         std::cout << "error: " << e.what();
     }

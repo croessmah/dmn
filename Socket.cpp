@@ -113,7 +113,12 @@ Socket & Socket::listen(int backlog)
 
 Socket Socket::accept()
 {
-    return ::accept(socket_, NULL, NULL);
+	return ::accept(socket_, NULL, NULL);
+}
+
+bool Socket::connect(const char *ipStr, uint16_t port)
+{
+
 }
 
 void Socket::close()
